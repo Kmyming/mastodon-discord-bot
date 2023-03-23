@@ -1,8 +1,6 @@
 import fetch from 'node-fetch';
 import Mastodon from 'mastodon-api';
 import ENV from 'dotenv';
-//const fetch = require("node-fetch");
-//const Mastodon = require("mastodon-api");
 
 ENV.config();
 
@@ -21,11 +19,13 @@ const mastodonClient = new Mastodon({
   api_url: `https://tinkertofu.com/api/v1/`,
 });
 console.log('Running script. Connecting to Mastodon streaming API...');
+
 // Start listening to the Mastodon API stream
 const listener = mastodonClient.stream('streaming/user');
 //listener.on('message', msg => console.log(msg));
 //listener.on('error', err => console.log(err));
 
+//listen to the streaming API for a new message event on the local timeline and checks for a new status posted
 listener.on("message", async (message) => {
   try {
     console.log();
@@ -51,6 +51,7 @@ listener.on("message", async (message) => {
         body: JSON.stringify(payload),
       });
 
+      //send error messages for diagnostics for Discord API error
       if (response.status !== 204) {
         console.error(
           `Received status ${response.status} from webhook API: ${await response.text()}`
@@ -63,7 +64,7 @@ listener.on("message", async (message) => {
     console.error(`Error processing message: ${error}`);
   }
 });
-
+//send error message for diagnostics for Mastodon API error
 mastodonClient.stream("streaming/user").on("error", (error) => {
   console.error(`Mastodon API stream error: ${error}`);
 }); 

@@ -11,7 +11,7 @@ ENV.config();
 const webhookURL = "https://discordapp.com/api/webhooks/1088334454990307329/I62CJyU76An4O1N5uw3d3-c4TUGoUnVHGhefEyn7v1S-Y4g8vEJ2M8rhEclgwbgtPpp0";
 const mastodonInstance = "tinkertofu.com";
 const mastodonAccessToken = process.env.ACCESS_TOKEN;
-
+let role ='';
 // Create a Mastodon API client with the access token
 const mastodonClient = new Mastodon({
   access_token: mastodonAccessToken,
@@ -36,29 +36,64 @@ listener.on("message", async (message) => {
       // Get the status message and author
       const status = message.data.content;
       const author = message.data.account.display_name;
+      const id = message.data.account.id;
       const statusUrl = message.data.url;
-
-      // Create a Discord webhook payload
-      const payload = {
-        content: 'Status Received!',
-        content: `New Submission Posted! **@${author}** just posted a new status on ${mastodonInstance}.\n${statusUrl}`,
+      
+      const params = {
+        id: id,
       };
-    
-      // Send the payload to the Discord webhook
-      const response = await fetch(webhookURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const role = await mastodonClient.get('admin/accounts/:id', params, (error,data) => {
+            if (error){
+              console.error(error);
+            }else{
+              console.log("User id: " + id);
+            }
+          }); 
 
-      //send error messages for diagnostics for Discord API error
-      if (response.status !== 204) {
-        console.error(
-          `Received status ${response.status} from webhook API: ${await response.text()}`
-        );
-      } else {
-        console.log(`Message sent to Discord: ${payload.content}`);
-      }
+      console.log("User role: " + role.data.role.name); 
+      if (role.data.role.name == "Administrator" || role.data.role.name == "Moderator"){
+        // Create a Discord webhook payload
+        const payload = {
+          content: 'Status Received!',
+          content: `Annoucement from **@${author}**, **Role: ${role.data.role.name}**: on ${mastodonInstance}.\n${statusUrl}`,
+        };
+        
+        // Send the payload to the Discord webhook
+        const response = await fetch(webhookURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        //send error messages for diagnostics for Discord API error
+        if (response.status !== 204) {
+          console.error(
+            `Received status ${response.status} from webhook API: ${await response.text()}`
+          );
+        } else {
+          console.log(`Message sent to Discord: ${payload.content}`);
+        }
+      }else {
+        // Create a Discord webhook payload
+        const payload = {
+          content: 'Status Received!',
+          content: `New Submission Posted! **@${author}** from **Group: ${role.data.role.name}** just posted a new status on ${mastodonInstance}.\n${statusUrl}`,
+        };
+
+        // Send the payload to the Discord webhook
+        const response = await fetch(webhookURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        //send error messages for diagnostics for Discord API error
+        if (response.status !== 204) {
+          console.error(
+            `Received status ${response.status} from webhook API: ${await response.text()}`
+          );
+        } else {
+          console.log(`Message sent to Discord: ${payload.content}`);
+        }
+      } 
     }
   } catch (error) {
     console.error(`Error processing message: ${error}`);

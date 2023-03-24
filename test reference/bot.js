@@ -1,4 +1,5 @@
-
+//This script runs the Mastodon-Submissons-Tracker discord bot. Has the basic set up for a discord bot, can add additional commands if required. 
+//(Does not use slash commands)
 // Require the necessary discord.js classes
 const { Client, Events, GatewayIntentBits, EmbedBuilder, PermissionsBitField, Permissions } = require('discord.js');
 // Create a new client instance

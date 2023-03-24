@@ -1,3 +1,4 @@
+//This script tries to use masto.js and discord.js to run the Discord webhook
 import Discord from'discord.js';
 import { login } from 'masto';
 

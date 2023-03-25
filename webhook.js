@@ -21,7 +21,7 @@ const mastodonClient = new Mastodon({
 console.log('Running script. Connecting to Mastodon streaming API...');
 
 // Start listening to the Mastodon API stream
-const listener = mastodonClient.stream('streaming/user');
+const listener = mastodonClient.stream('streaming/public/local');
 //listener.on('message', msg => console.log(msg));
 //listener.on('error', err => console.log(err));
 
